@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A-Level Biology Concept Checker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .option-btn {
+            transition: all 0.2s;
+        }
+        .option-btn:hover:not(:disabled) {
+            transform: scale(1.01);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+    <header class="bg-emerald-700 text-white shadow-md py-6 px-4">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-3xl font-bold">A-Level Biology Concept Checker</h1>
+            <p class="text-emerald-100 mt-2">Comprehensive review of biochemistry, genetics, and cell biology.</p>
+        </div>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div id="app-container" class="bg-white rounded-xl shadow-lg w-full max-w-4xl overflow-hidden relative">
+            
+            <!-- Start Screen -->
+            <div id="start-screen" class="p-8 text-center fade-in">
+                <div class="mb-8 flex justify-center">
+                    <svg class="w-24 h-24 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                </div>
+                <h2 class="text-2xl font-semibold mb-4 text-slate-700">Ready to test your knowledge?</h2>
+                <p class="text-slate-600 mb-6 max-w-2xl mx-auto">
+                    This quiz contains a large database of A-Level Biology questions based on your course materials, including <strong>Biogenic Elements and Inorganic Biogenic Compounds.pdf</strong>. 
+                    <br><br>
+                    In each session, you will face <strong>20 randomly selected questions</strong> to ensure a unique challenge every time. At the end, you can review your answers.
+                </p>
+                <button onclick="startQuiz()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-200 transform hover:-translate-y-1">
+                    Start Assessment
+                </button>
+            </div>
+
+            <!-- Quiz Screen -->
+            <div id="quiz-screen" class="hidden flex-col h-full fade-in">
+                <div class="bg-slate-100 px-8 py-4 border-b border-slate-200 flex justify-between items-center">
+                    <span id="question-tracker" class="text-sm font-bold text-slate-500 uppercase tracking-wider">Question 1 of 20</span>
+                    <div class="w-1/2 bg-slate-200 rounded-full h-2.5">
+                        <div id="progress-bar" class="bg-emerald-600 h-2.5 rounded-full" style="width: 5%"></div>
+                    </div>
+                </div>
+                
+                <div class="p-8 flex-grow">
+                    <h3 id="question-text" class="text-xl md:text-2xl font-semibold text-slate-800 mb-6 leading-relaxed">
+                        Question goes here?
+                    </h3>
+                    
+                    <div id="options-container" class="space-y-3">
+                        <!-- Options injected via JS -->
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 px-8 py-4 border-t border-slate-200 flex justify-end">
+                    <button id="next-btn" onclick="handleNext()" disabled class="bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-2 px-6 rounded-lg transition duration-200">
+                        Next Question
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Screen -->
+            <div id="results-screen" class="hidden flex-col h-full fade-in">
+                <div class="bg-emerald-600 text-white p-8 text-center">
+                    <h2 class="text-3xl font-bold mb-2">Assessment Complete</h2>
+                    <p class="text-emerald-100 text-lg mb-6">Here is how you performed on this session.</p>
+                    
+                    <div class="inline-block bg-white rounded-full p-6 w-40 h-40 shadow-inner flex flex-col items-center justify-center">
+                        <span id="score-text" class="text-4xl font-extrabold text-emerald-700">0%</span>
+                        <span id="score-fraction" class="text-slate-500 font-medium mt-1">0 / 20</span>
+                    </div>
+                </div>
+                
+                <div class="p-8 max-h-[60vh] overflow-y-auto bg-slate-50">
+                    <h3 class="text-xl font-bold text-slate-700 mb-6 border-b pb-2">Review Your Answers</h3>
+                    <div id="review-container" class="space-y-8">
+                        <!-- Review items injected via JS -->
+                    </div>
+                </div>
+
+                <div class="bg-white px-8 py-4 border-t border-slate-200 flex justify-center">
+                    <button onclick="restartQuiz()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-200">
+                        Take Another Random Quiz
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="bg-slate-800 text-slate-400 py-4 text-center text-sm">
+        <p>A-Level Biology Review Tool &copy; 2026</p>
+    </footer>
+
+    <script>
+        // Background database of challenging A-Level biology questions
+        const questionDatabase = [
+            {
+                question: "Which primary biogenic element is considered central to the development of living matter because it is the simplest atom capable of forming four stable covalent bonds in a tetrahedral arrangement?",
+                options: ["Carbon", "Oxygen", "Nitrogen", "Hydrogen"],
+                correct: 0
+            },
+            {
+                question: "Why do water molecules have significantly higher melting and boiling points compared to molecules of similar mass?",
+                options: [
+                    "Hydrogen bonds form between the partially positive hydrogen and partially negative oxygen of adjacent molecules.",
+                    "Water forms a continuous crystal lattice of nonpolar covalent bonds at room temperature.",
+                    "The hydration shell formed by water molecules increases the overall mass of the solution.",
+                    "The strong covalent bonds within the water molecule require immense heat to break."
+                ],
+                correct: 0
+            },
+            {
+                question: "Osmosis plays a crucial role in root hair cells taking up water. Which of the following accurately describes the conditions required for osmosis?",
+                options: [
+                    "Solvent particles flow through a semipermeable membrane toward the more concentrated solution.",
+                    "Solute particles flow from places of higher concentration toward places of lower concentration.",
+                    "Both solvent and solute particles freely cross a permeable membrane to reach equilibrium.",
+                    "Water flows actively through a semipermeable membrane against the concentration gradient, requiring ATP."
+                ],
+                correct: 0
+            },
+            {
+                question: "Which functional group is characteristic of alcohols and is responsible for their polar nature?",
+                options: ["Hydroxyl group (-OH)", "Carboxyl group (-COOH)", "Carbonyl group (C=O)", "Amino group (-NH2)"],
+                correct: 0
+            },
+            {
+                question: "Oxo compounds include aldehydes and ketones. What is a key chemical difference between these two groups?",
+                options: [
+                    "Aldehyde groups easily take up oxygen to become carboxyl groups (strongly reducing), whereas ketones do not easily oxidize.",
+                    "Ketones contain a terminal oxo group, whereas aldehydes contain a chain-internal oxo group.",
+                    "Aldehydes form ester bonds with water, while ketones form hydrogen bridges.",
+                    "Aldehydes are basic in aqueous solutions, whereas ketones are strongly acidic."
+                ],
+                correct: 0
+            },
+            {
+                question: "Neutral fat molecules (triglycerides) are formed through a condensation reaction. What are the constituent building blocks?",
+                options: ["One glycerol and three fatty acid molecules", "Three glycerols and one fatty acid molecule", "One glycerol and two fatty acid molecules, plus one phosphate group", "A long unbranched chain of glucose molecules"],
+                correct: 0
+            },
+            {
+                question: "Phosphatids (phospholipids) have an amphipathic nature. What does this mean in the context of an aqueous environment?",
+                options: [
+                    "They possess both polar (water-soluble) and nonpolar (water-repelling) molecular fragments, allowing them to form lipid bilayers.",
+                    "They are completely nonpolar and form rigid crystalline structures inside the cell cytoplasm.",
+                    "They possess a dual catalytic function, acting as both an enzyme and a substrate in cellular respiration.",
+                    "They are fully soluble in water due to their three hydroxyl groups forming hydrogen bonds."
+                ],
+                correct: 0
+            },
+            {
+                question: "Carotenoids feature a system of conjugated double bonds. What is the primary biological significance of this structural feature in plants?",
+                options: [
+                    "It allows their electrons to be easily excited by visible light, functioning as photosynthetic pigments.",
+                    "It makes the molecule highly resistant to biological decomposition by bacteria.",
+                    "It provides a rigid structural framework for the plant cell wall.",
+                    "It allows them to act as the primary storage form of excess glucose."
+                ],
+                correct: 0
+            },
+            {
+                question: "Cellulose is highly resistant to hydrolysis. Which structural property contributes most to this resistance?",
+                options: [
+                    "It consists of long, unbranched straight chains of glucose connected into parallel bundles by hydrogen bonds.",
+                    "It forms a highly branched spiral structure (amylopectin) that physically blocks enzymes.",
+                    "It contains nitrogen atoms incorporated into the carbon ring, forming a heterocycle.",
+                    "It contains conjugated double bonds that absorb the energy required for enzymatic cleavage."
+                ],
+                correct: 0
+            },
+            {
+                question: "During Fehling's test, which detects reducing sugars, what chemical reaction is occurring?",
+                options: [
+                    "The aldehyde group of the sugar reduces Cu(II) to Cu(I), forming a red copper(I) oxide precipitate.",
+                    "The ketone group of the sugar oxidizes silver nitrate to form a silver mirror.",
+                    "The carboxyl group of the sugar donates a proton to form a purple biuret complex.",
+                    "The hydroxyl group of the sugar reacts with potassium iodide to form a deep blue spiral."
+                ],
+                correct: 0
+            },
+            {
+                question: "Amino acids are amphoteric compounds. This means that in an aqueous solution, their zwitterionic structure allows them to:",
+                options: [
+                    "Act as both acids (donating a proton) and bases (accepting a proton).",
+                    "Dissolve in both polar solvents (like water) and nonpolar solvents (like ether).",
+                    "Form both alpha-helix and beta-sheet secondary structures simultaneously.",
+                    "Rotate plane-polarized light in both left and right directions."
+                ],
+                correct: 0
+            },
+            {
+                question: "Pyridine, pyrimidine, and pyrrole are heterocyclic compounds. What is required for their structural rings to be considered 'aromatic'?",
+                options: [
+                    "The presence of a system of six delocalized electrons.",
+                    "The presence of exactly two heteroatom nitrogens.",
+                    "The complete absence of oxygen and sulfur atoms.",
+                    "A sequence of exactly three consecutive conjugated triple bonds."
+                ],
+                correct: 0
+            },
+            {
+                question: "In the reversible hydrogen transport by the nicotinamide group (e.g., in NAD+), what structural consequence occurs when the nitrogen takes up an electron?",
+                options: [
+                    "The aromatic structure of the nicotinic acid collapses.",
+                    "The molecule splits into separate pyridine and purine rings.",
+                    "The phosphate group is immediately hydrolyzed, releasing 30 kJ of energy.",
+                    "The nitrogen forms a stable triple bond with the adjacent carbon."
+                ],
+                correct: 0
+            },
+            {
+                question: "Nucleic acids consist of nucleotide building blocks. A nucleotide is structurally composed of:",
+                options: [
+                    "A pentose sugar, a phosphoric acid group, and a nitrogen-containing organic base.",
+                    "A hexose sugar, two phosphoric acid groups, and an amino acid.",
+                    "A glycerol backbone, two fatty acids, and a heterocyclic nitrogenous base.",
+                    "A sterane skeleton, a carboxyl group, and a pentose sugar."
+                ],
+                correct: 0
+            },
+            {
+                question: "According to the base-pairing rules in DNA, which of the following is correct?",
+                options: [
+                    "Cytosine and guanine form a pair connected by three hydrogen bonds.",
+                    "Adenine and thymine form a pair connected by three hydrogen bonds.",
+                    "A purine base always pairs with another purine base.",
+                    "Uracil pairs with adenine via two hydrogen bonds in the DNA double helix."
+                ],
+                correct: 0
+            },
+            {
+                question: "In the Hershey and Chase experiment utilizing T2 bacteriophages, what specific result proved that DNA is the hereditary material?",
+                options: [
+                    "Significant radioactivity was measured in bacterial cells infected with 32P-isotope-labeled phages, but not in those labeled with 35S-isotope.",
+                    "The 35S-isotope was found integrated into the bacterial chromosome, causing mutations.",
+                    "Phages completely synthesized their protein coats from the 32P-isotope.",
+                    "X-ray diffraction of the infected cells showed a double-helix structure glowing with radioactive sulfur."
+                ],
+                correct: 0
+            },
+            {
+                question: "The process of DNA replication is described as 'semiconservative'. What does this mean?",
+                options: [
+                    "One nucleotide strand of each resulting DNA molecule comes from the original DNA, while the other is newly synthesized.",
+                    "Half of the biological information is conserved, while the other half mutates during copying.",
+                    "Replication only occurs during half of the cell cycle, pausing at the G1 phase.",
+                    "One resulting DNA molecule is completely new, while the other consists entirely of the original strands."
+                ],
+                correct: 0
+            },
+            {
+                question: "The genetic code is described as 'comma-free' and 'non-overlapping'. If a sequence starts CGACCAAGA, what are the first three resulting triplets?",
+                options: [
+                    "CGA, CCA, AGA",
+                    "CGA, GAC, ACC",
+                    "CGA, CCA, CAA",
+                    "CGA, ACC, AAG"
+                ],
+                correct: 0
+            },
+            {
+                question: "Marshall Warren Nirenberg used a synthetic RNA containing only uracil. What was the outcome of his experiment in a cell-free medium?",
+                options: [
+                    "It directed the synthesis of a polypeptide containing only the amino acid phenylalanine.",
+                    "It initiated the replication of bacterial DNA without the need for DNA polymerase.",
+                    "It demonstrated that three consecutive stop codons immediately halted the experiment.",
+                    "It proved that uracil could successfully substitute for thymine in the DNA double helix."
+                ],
+                correct: 0
+            },
+            {
+                question: "In the light reactions of photosynthesis, how does photosystem II replenish the electron that is removed from its reaction center chlorophyll-a?",
+                options: [
+                    "By splitting a water molecule (photolysis) into electrons, protons, and molecular oxygen.",
+                    "By accepting a low-energy electron returning from the Calvin cycle (dark reactions).",
+                    "By breaking down ATP into ADP and inorganic phosphate.",
+                    "By absorbing an electron directly from a photon of light."
+                ],
+                correct: 0
+            },
+            {
+                question: "During the Calvin cycle (dark reactions) of photosynthesis, how many molecules of the five-carbon sugar must bind with carbon dioxide to ultimately yield one molecule of glucose (a 6-carbon sugar)?",
+                options: [
+                    "6",
+                    "2",
+                    "3",
+                    "12"
+                ],
+                correct: 0
+            },
+            {
+                question: "Which scientist pioneered the use of radioactive isotopic labeling in metabolism research, specifically tracking phosphorus, for which they won the Nobel Prize in 1943?",
+                options: [
+                    "George Hevesy",
+                    "Melvin Calvin",
+                    "Arthur Kornberg",
+                    "James Watson"
+                ],
+                correct: 0
+            },
+            {
+                question: "When lactic acid fermentation occurs in human muscle tissues, what is the immediate cause of pyruvic acid converting to lactic acid?",
+                options: [
+                    "A lack of oxygen prevents the oxidation of reduced coenzymes (NADH), requiring pyruvic acid to act as an electron acceptor.",
+                    "A surplus of ATP in the muscle cells triggers a feedback inhibition loop, reversing glycolysis.",
+                    "An excess of carbon dioxide forces the carboxylation of pyruvic acid into lactic acid.",
+                    "The absence of lactic acid bacteria forces muscle cells to adopt a viral fermentation pathway."
+                ],
+                correct: 0
+            },
+            {
+                question: "In terms of net energy yield (ATP), how does the biological oxidation of one mole of glucose compare to lactic acid fermentation?",
+                options: [
+                    "Biological oxidation yields 36 moles of ATP, whereas fermentation yields only 2 moles of ATP.",
+                    "Biological oxidation yields 2 moles of ATP, whereas fermentation yields 36 moles of ATP.",
+                    "Both processes yield 36 moles of ATP, but fermentation requires an initial input of 2 ATP.",
+                    "Biological oxidation yields 64 moles of ATP, whereas fermentation yields 4 moles of ATP."
+                ],
+                correct: 0
+            },
+            {
+                question: "In the structure of proteins, what defines the 'tertiary structure'?",
+                options: [
+                    "The complete, actual spatial arrangement (compact folding) of the polypeptide chain, stabilized by interactions between amino acid side chains.",
+                    "The linear connection sequence of amino acids via peptide bonds.",
+                    "The local spatial arrangement, such as alpha-helices and beta-sheets stabilized by hydrogen bonds.",
+                    "The association of multiple independent polypeptide subunits into a larger functional complex."
+                ],
+                correct: 0
+            },
+            {
+                question: "When a protein undergoes denaturation due to heavy metal ions (e.g., copper, silver), what structurally happens to the molecule?",
+                options: [
+                    "It irreversibly loses its functional spatial structure and typically coagulates.",
+                    "The peptide bonds are completely hydrolyzed, reducing the protein to free amino acids.",
+                    "It folds into an even tighter alpha-helix to protect its nonpolar side chains.",
+                    "It undergoes a reversible dehydration, forming a temporary crystalline structure."
+                ],
+                correct: 0
+            },
+            {
+                question: "Which of the following organic bases possesses a pyrimidine framework (a six-membered ring)?",
+                options: [
+                    "Cytosine, Thymine, Uracil",
+                    "Adenine, Guanine",
+                    "Cytosine, Adenine, Uracil",
+                    "Guanine, Thymine, Uracil"
+                ],
+                correct: 0
+            },
+            {
+                question: "The ATP molecule plays a central role in energy metabolism. How much energy is typically released during the hydrolysis of one mole of ATP to ADP?",
+                options: ["30 kJ", "36 kJ", "60 kJ", "12 kJ"],
+                correct: 0
+            },
+            {
+                question: "Which form of starch consists of unbranched chains of glucose molecules that form a spiral structure, allowing it to easily bind iodine to produce a deep blue color?",
+                options: ["Amylose", "Amylopectin", "Glycogen", "Cellulose"],
+                correct: 0
+            },
+            {
+                question: "Fats that stand in air for extended periods can undergo rancidification. What chemical change causes this?",
+                options: [
+                    "The unsaturated bonds in the fatty acids slowly oxidize.",
+                    "The ester bonds undergo complete hydrolysis into glycerol and fatty acids.",
+                    "The saturated carbon chains spontaneously form cyclic aromatic rings.",
+                    "Hydrogen bonds between triglyceride molecules denature."
+                ],
+                correct: 0
+            },
+            {
+                question: "Certain trace elements are vital for only specific groups of organisms. Silicon (Si) is an essential trace element for which of the following?",
+                options: ["Diatoms and some sponge species", "Mammalian tooth enamel", "Nitrogen-fixing bacteria", "Human thyroid hormone synthesis"],
+                correct: 0
+            },
+            {
+                question: "The biuret test is a simple procedure used to detect proteins. It relies on the detection of which specific chemical bond?",
+                options: ["Peptide bond", "Disulfide bridge", "Glycosidic bond", "Phosphodiester bond"],
+                correct: 0
+            },
+            {
+                question: "Which of the following polysaccharides contains nitrogen and forms the external skeleton of insects and fungi?",
+                options: ["Chitin", "Glycogen", "Cellulose", "Amylopectin"],
+                correct: 0
+            },
+            {
+                question: "In the context of the genetic code, what does it mean that the code is 'universal'?",
+                options: [
+                    "The meaning of the base triplets is essentially the same in all living organisms, from bacteria to vertebrates.",
+                    "Every single base triplet (all 64) codes for the exact same amino acid in all organisms.",
+                    "The code can be read both forwards and backwards with the same result.",
+                    "DNA and RNA utilize the exact same set of four bases uniformly across the biosphere."
+                ],
+                correct: 0
+            },
+            {
+                question: "In a polynucleotide chain, how are adjacent nucleotides physically connected?",
+                options: [
+                    "Through a phosphate group bonding the 5th carbon of one sugar to the 3rd carbon of the next sugar.",
+                    "Through hydrogen bonds formed directly between adjacent pentose sugars.",
+                    "Through an amide bond connecting the organic bases of adjacent nucleotides.",
+                    "Through a disulfide bridge connecting the 1st carbon of one sugar to the 5th carbon of another."
+                ],
+                correct: 0
+            }
+        ];
+
+        // App State
+        let sessionQuestions = [];
+        let currentQuestionIndex = 0;
+        let userAnswers = []; // stores selected option index
+
+        // Utility: Fisher-Yates Shuffle
+        function shuffleArray(array) {
+            let curId = array.length;
+            while (0 !== curId) {
+                let randId = Math.floor(Math.random() * curId);
+                curId -= 1;
+                let tmp = array[curId];
+                array[curId] = array[randId];
+                array[randId] = tmp;
+            }
+            return array;
+        }
+
+        function startQuiz() {
+            // 1. Pick 20 random questions from the database
+            const shuffledDB = shuffleArray([...questionDatabase]);
+            const selectedRaw = shuffledDB.slice(0, 20);
+
+            // 2. Prepare the questions (shuffle their options, keep track of correct answer)
+            sessionQuestions = selectedRaw.map(q => {
+                // Create array of objects to keep track of correct text after shuffling
+                let optionsWithMeta = q.options.map((opt, idx) => ({
+                    text: opt,
+                    isCorrect: idx === q.correct
+                }));
+                
+                shuffleArray(optionsWithMeta);
+                
+                // Find new correct index
+                let newCorrectIndex = optionsWithMeta.findIndex(opt => opt.isCorrect);
+                
+                return {
+                    question: q.question,
+                    options: optionsWithMeta.map(opt => opt.text),
+                    correct: newCorrectIndex
+                };
+            });
+
+            currentQuestionIndex = 0;
+            userAnswers = new Array(20).fill(null);
+
+            // UI Transitions
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('results-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            document.getElementById('quiz-screen').classList.add('flex');
+
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = sessionQuestions[currentQuestionIndex];
+            
+            // Update Progress
+            document.getElementById('question-tracker').innerText = `Question ${currentQuestionIndex + 1} of 20`;
+            document.getElementById('progress-bar').style.width = `${((currentQuestionIndex + 1) / 20) * 100}%`;
+            
+            // Render Question
+            document.getElementById('question-text').innerText = q.question;
+            
+            // Render Options
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `option-btn w-full text-left p-4 rounded-xl border-2 border-slate-200 bg-white hover:border-emerald-400 focus:outline-none transition-colors duration-200`;
+                btn.onclick = () => selectOption(idx);
+                // Highlight if already selected (useful if we allow going back, though here we just go forward)
+                if(userAnswers[currentQuestionIndex] === idx) {
+                    btn.classList.add('border-emerald-500', 'bg-emerald-50');
+                }
+                
+                // Formatting specific text (e.g., superscripts/subscripts if any)
+                let renderText = opt.replace(/32P/g, '<sup>32</sup>P').replace(/35S/g, '<sup>35</sup>S').replace(/Cu\(II\)/g, 'Cu<sup>2+</sup>');
+                btn.innerHTML = `<span class="flex items-center"><span class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold mr-4 shrink-0">${String.fromCharCode(65 + idx)}</span> <span class="text-slate-700">${renderText}</span></span>`;
+                
+                optionsContainer.appendChild(btn);
+            });
+
+            // Disable Next Button initially
+            document.getElementById('next-btn').disabled = true;
+        }
+
+        function selectOption(index) {
+            userAnswers[currentQuestionIndex] = index;
+            
+            // Update UI
+            const btns = document.getElementById('options-container').querySelectorAll('button');
+            btns.forEach((btn, i) => {
+                const letterBadge = btn.querySelector('span > span:first-child');
+                if (i === index) {
+                    btn.classList.add('border-emerald-500', 'bg-emerald-50');
+                    btn.classList.remove('border-slate-200', 'bg-white');
+                    letterBadge.classList.add('bg-emerald-500', 'text-white');
+                    letterBadge.classList.remove('bg-slate-100', 'text-slate-500');
+                } else {
+                    btn.classList.remove('border-emerald-500', 'bg-emerald-50');
+                    btn.classList.add('border-slate-200', 'bg-white');
+                    letterBadge.classList.remove('bg-emerald-500', 'text-white');
+                    letterBadge.classList.add('bg-slate-100', 'text-slate-500');
+                }
+            });
+
+            // Enable next button
+            document.getElementById('next-btn').disabled = false;
+        }
+
+        function handleNext() {
+            if (currentQuestionIndex < 19) {
+                currentQuestionIndex++;
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            // UI Transitions
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('flex');
+            document.getElementById('results-screen').classList.remove('hidden');
+            document.getElementById('results-screen').classList.add('flex');
+
+            // Calculate Score
+            let correctCount = 0;
+            const reviewContainer = document.getElementById('review-container');
+            reviewContainer.innerHTML = '';
+
+            sessionQuestions.forEach((q, i) => {
+                const isCorrect = userAnswers[i] === q.correct;
+                if (isCorrect) correctCount++;
+
+                // Build Review Item
+                const reviewDiv = document.createElement('div');
+                reviewDiv.className = `p-6 rounded-xl border-l-4 ${isCorrect ? 'border-emerald-500 bg-white' : 'border-red-500 bg-white'} shadow-sm`;
+                
+                let optionsHTML = '';
+                q.options.forEach((opt, optIdx) => {
+                    let optClass = 'text-slate-600';
+                    let icon = '';
+                    
+                    if (optIdx === q.correct) {
+                        optClass = 'text-emerald-700 font-bold bg-emerald-50 p-2 rounded';
+                        icon = '✓ ';
+                    } else if (optIdx === userAnswers[i]) {
+                        optClass = 'text-red-600 line-through bg-red-50 p-2 rounded';
+                        icon = '✗ ';
+                    }
+
+                    optionsHTML += `<div class="mt-2 ${optClass}">${icon}${opt.replace(/32P/g, '<sup>32</sup>P').replace(/35S/g, '<sup>35</sup>S')}</div>`;
+                });
+
+                reviewDiv.innerHTML = `
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mt-1 mr-3">
+                            ${isCorrect 
+                                ? '<svg class="w-6 h-6 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>'
+                                : '<svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>'
+                            }
+                        </div>
+                        <div class="w-full">
+                            <h4 class="text-lg font-medium text-slate-800 mb-3"><span class="text-slate-400 mr-2">Q${i+1}.</span>${q.question}</h4>
+                            <div class="space-y-1 text-sm pl-2 border-l-2 border-slate-100">
+                                ${optionsHTML}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                reviewContainer.appendChild(reviewDiv);
+            });
+
+            // Update Score Header
+            const percentage = Math.round((correctCount / 20) * 100);
+            document.getElementById('score-text').innerText = `${percentage}%`;
+            document.getElementById('score-fraction').innerText = `${correctCount} / 20`;
+            
+            // Change score text color based on result
+            const scoreText = document.getElementById('score-text');
+            if(percentage >= 80) scoreText.className = "text-4xl font-extrabold text-emerald-600";
+            else if(percentage >= 60) scoreText.className = "text-4xl font-extrabold text-amber-500";
+            else scoreText.className = "text-4xl font-extrabold text-red-600";
+        }
+
+        function restartQuiz() {
+            startQuiz();
+        }
+    </script>
+</body>
+</html>
